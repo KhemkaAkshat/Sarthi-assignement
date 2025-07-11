@@ -1,24 +1,29 @@
-"use client"
+"use client";
 import axios from "axios";
 import { useState } from "react";
 
 function Home() {
+  const [description, setDescription] = useState("");
+  const [response, setResponse] = useState<{
+    error?: string;
+    emotion?: string;
+    confidence?: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [description, setDescription] = useState("")
-  const [response, setResponse] = useState<{ error?: string; emotion?: string; confidence?: number } | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent)=>{
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try{
-      const res = await axios.post("/api/analysis", {description});
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/analysis", { description });
       setResponse(res.data);
-      console.log(res.data)
-    } catch(err){
-      console.log("API cann failed: ", err)
+      setLoading(false);
+      console.log(res.data);
+    } catch (err) {
+      setLoading(false);
+      console.log("API cann failed: ", err);
     }
-  }
-
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
@@ -31,8 +36,8 @@ function Home() {
             rows={5}
             placeholder="Type your emotions here"
             className="w-full resize-none rounded-lg border border-gray-300 p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value = {description}
-            onChange={(e)=>setDescription(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
 
@@ -43,19 +48,22 @@ function Home() {
         >
           Submit
         </button>
+
+        {loading ? (
+          <div className="text-center text-gray-700">Loading...</div>
+        ) : response ? (
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg text-gray-800">
+            {response.error ? (
+              <p>Error: {response.error}</p>
+            ) : (
+              <>
+                <p>Emotion: {response.emotion}</p>
+                <p>Confidence: {response.confidence}</p>
+              </>
+            )}
+          </div>
+        ) : null}
       </form>
-      {response && (
-        <div>
-          {response.error ? (
-            <p>Error: {response.error}</p>
-          ) : (
-            <>
-            <p>Emotion : {response.emotion}</p>
-            <p>Confidence: {response.confidence} </p>
-            </>
-          )}
-        </div>
-      )}
     </div>
   );
 }
